@@ -1,18 +1,18 @@
-import os
 import sys
+from pathlib import Path
 
-# Ensure local package under ./src is importable when running directly
-PROJECT_ROOT = os.path.dirname(__file__)
-SRC_PATH = os.path.join(PROJECT_ROOT, "src")
-if SRC_PATH not in sys.path:
-	sys.path.insert(0, SRC_PATH)
+# Ensure local src/ is on the path when running directly
+sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
+from text_summarizer.pipeline.stage_01_data_ingestion import DataIngestionTrainPipeline
 from text_summarizer.logging import logger
 
-
-def main() -> None:
-	logger.info("This is a log message from main.py")
-
-
-if __name__ == "__main__":
-	main()
+STAGE_NAME = "Data Ingestion Stage"
+try: 
+    logger.info(f">>>>>> stage {STAGE_NAME} started <<<<<<")
+    data_ingestion = DataIngestionTrainPipeline()
+    data_ingestion.main()
+    logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<\n\nx==========x")
+except Exception as e: 
+    logger.exception(f"Error in stage {STAGE_NAME}")
+    raise e
