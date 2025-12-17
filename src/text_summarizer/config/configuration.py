@@ -10,18 +10,12 @@ class ConfigurationManager:
         config_filepath=CONFIG_FILE_PATH,
         params_filepath=PARAMS_FILE_PATH,
     ):
-        print(f"DEBUG - ConfigurationManager received config_filepath: {config_filepath}")
-        print(f"DEBUG - ConfigurationManager received params_filepath: {params_filepath}")
-        
         # Convert relative paths to absolute
         if not config_filepath.is_absolute():
             config_filepath = Path(os.getcwd()) / config_filepath
         if not params_filepath.is_absolute():
             params_filepath = Path(os.getcwd()) / params_filepath
-        
-        print(f"DEBUG - After path conversion, config_filepath: {config_filepath}")
-        print(f"DEBUG - After path conversion, params_filepath: {params_filepath}")
-        
+
         self.config = read_yaml(config_filepath)
         self.params = read_yaml(params_filepath)
         create_directories([self.config.artifacts_root])
