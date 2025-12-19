@@ -52,3 +52,20 @@ class ConfigurationManager:
         )
         return data_transformation_config
     
+    def get_model_trainer_config(self):
+        config = self.config.model_trainer
+        create_directories([config.root_dir]) 
+        from text_summarizer.entity import ModelTrainerConfig
+        model_trainer_config = ModelTrainerConfig(
+            root_dir= config.root_dir,
+            model_ckpt=config.model_ckpt,
+            num_train_epochs=config.num_train_epochs,
+            learning_rate=config.learning_rate,
+            train_batch_size=config.train_batch_size,
+            eval_batch_size=config.eval_batch_size,
+            weight_decay=config.weight_decay,
+            warmup_steps=config.warmup_steps,
+            logging_dir=config.logging_dir,
+        )
+        return model_trainer_config
+    
