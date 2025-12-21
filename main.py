@@ -1,15 +1,21 @@
 import sys
+import shutil
 from pathlib import Path
+
+# Ensure local src/ is on the path before importing pipelines (when package isn't installed)
+sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
+
+# Optional: Clean artifacts folder for fresh run (comment out to keep old artifacts)
+artifacts_dir = Path(__file__).resolve().parent / "artifacts"
+if artifacts_dir.exists():
+    shutil.rmtree(artifacts_dir)
+
 from text_summarizer.pipeline.stage_01_data_ingestion import DataIngestionTrainPipeline
 from text_summarizer.pipeline.stage_02_data_validation import DataValidationTrainPipeline
 from text_summarizer.pipeline.stage_03_data_transformation import DataTransformationTrainPipeline
-from text_summarizer.pipeline.stage_04_model_trainer import ModelTrainerPipeline
+from text_summarizer.pipeline.stage_04_model_trainer import ModelTrainerTrainingPipeline
 from text_summarizer.pipeline.stage_05_model_evaluation import ModelEvaluationTrainPipeline
 from text_summarizer.logging import logger
-
-
-# Ensure local src/ is on the path when running directly
-sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
 STAGE_NAME = "Data Ingestion Stage"
 try: 
@@ -47,8 +53,8 @@ except Exception as e:
 stage_name = "Model Training Stage"
 try:
     logger.info(f">>>>>> stage {stage_name} started <<<<<<")
-    from text_summarizer.pipeline.stage_04_model_trainer import ModelTrainerPipeline
-    model_trainer = ModelTrainerPipeline()
+    from text_summarizer.pipeline.stage_04_model_trainer import ModelTrainerTrainingPipeline
+    model_trainer = ModelTrainerTrainingPipeline()
     model_trainer.main()
     logger.info(f">>>>>> stage {stage_name} completed <<<<<<\n\nx==========x")
 except Exception as e:

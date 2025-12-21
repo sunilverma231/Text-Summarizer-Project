@@ -6,6 +6,7 @@ import pandas as pd
 from tqdm import tqdm
 from text_summarizer.logging import logger
 from text_summarizer.entity import ModelEvaluationConfig
+from peft import PeftModel
 
 class ModelEvaluation:
     def __init__(self, config: ModelEvaluationConfig):
@@ -55,9 +56,26 @@ class ModelEvaluation:
 
 
     def evaluate(self):
+        import os
         device = "cuda" if torch.cuda.is_available() else "cpu"
         tokenizer = AutoTokenizer.from_pretrained(self.config.tokenizer_path)
-        model_pegasus = AutoModelForSeq2SeqLM.from_pretrained(self.config.model_path).to(device)
+        
+        # Try to load as LoRA model, fallback to base model if adapter not found
+        adapter_config_path = os.path.join(self.config.model_path, "adapter_config.json")
+        
+        if os.path.exists(adapter_config_path):
+            # LoRA model exists - load base model and merge with LoRA weights
+            logger.info("Loading model with LoRA adapters...")
+            base_model = AutoModelForSeq2SeqLM.from_pretrained(self.config.model_path)
+            model = PeftModel.from_pretrained(base_model, self.config.model_path).to(device)
+            model_name = "pegasus-lora"
+            logger.info("LoRA model loaded successfully!")
+        else:
+            # No LoRA adapter - use standard model
+            logger.info("No LoRA adapters found. Loading standard model...")
+            model = AutoModelForSeq2SeqLM.from_pretrained(self.config.model_path).to(device)
+            model_name = "pegasus"
+            logger.info("Standard model loaded successfully!")
        
         #loading data 
         dataset_samsum_pt = load_from_disk(self.config.data_path)
@@ -68,10 +86,20 @@ class ModelEvaluation:
         rouge_metric = evaluate.load('rouge')
 
         score = self.calculate_metric_on_test_ds(
-        dataset_samsum_pt['test'][0:10], rouge_metric, model_pegasus, tokenizer, batch_size = 2, column_text = 'dialogue', column_summary= 'summary'
+        dataset_samsum_pt['test'][0:10], rouge_metric, model, tokenizer, batch_size = 2, column_text = 'dialogue', column_summary= 'summary'
             )
 
-        rouge_dict = dict((rn, score[rn].mid.fmeasure ) for rn in rouge_names )
+        # Handle different ROUGE score formats (newer versions return float directly)
+        rouge_dict = {}
+        for rn in rouge_names:
+            if hasattr(score[rn], 'mid'):
+                # Old format: score[rn].mid.fmeasure
+                rouge_dict[rn] = score[rn].mid.fmeasure
+            else:
+                # New format: score[rn] is already a float
+                rouge_dict[rn] = score[rn]
 
-        df = pd.DataFrame(rouge_dict, index = ['pegasus'] )
+        df = pd.DataFrame(rouge_dict, index = [model_name] )
         df.to_csv(self.config.metric_file_name, index=False)
+        
+        logger.info(f"Evaluation metrics saved to: {self.config.metric_file_name}")

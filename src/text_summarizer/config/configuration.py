@@ -56,16 +56,20 @@ class ConfigurationManager:
         config = self.config.model_trainer
         create_directories([config.root_dir]) 
         from text_summarizer.entity import ModelTrainerConfig
+        ta = self.params.TrainingArguments
         model_trainer_config = ModelTrainerConfig(
-            root_dir= config.root_dir,
+            root_dir=config.root_dir,
+            data_path=config.data_path,
             model_ckpt=config.model_ckpt,
-            num_train_epochs=config.num_train_epochs,
-            learning_rate=config.learning_rate,
-            train_batch_size=config.train_batch_size,
-            eval_batch_size=config.eval_batch_size,
-            weight_decay=config.weight_decay,
-            warmup_steps=config.warmup_steps,
-            logging_dir=config.logging_dir,
+            num_train_epochs=ta.num_train_epochs,
+            warmup_steps=ta.warmup_steps,
+            per_device_train_batch_size=ta.per_device_train_batch_size,
+            weight_decay=ta.weight_decay,
+            logging_steps=ta.logging_steps,
+            evaluation_strategy=ta.evaluation_strategy,
+            eval_steps=ta.eval_steps,
+            save_steps=ta.save_steps,
+            gradient_accumulation_steps=ta.gradient_accumulation_steps,
         )
         return model_trainer_config
     
