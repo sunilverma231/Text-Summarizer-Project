@@ -1,0 +1,26 @@
+# Exclude local files that should not be in the image
+.git/
+.gitignore
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.env
+.env.*
+.venv/
+venv/
+node_modules/
+logs/
+research/
+artifacts/data_ingestion/
+artifacts/data_transformation/
+artifacts/data_validation/
+artifacts/model_trainer/checkpoint-*/
+artifacts/model_trainer/tokenizer/
+artifacts/model_trainer/pegasus-samsum-model/
+artifacts/model_evaluation/
+__pycache__/
+*.ipynb
+*.md
+Dockerfile
+README.md
