@@ -1,21 +1,25 @@
-import setuptools 
+import setuptools
+from pathlib import Path
 
-with open("README.md", "r", encoding="utf-8") as f:
-    long_description = f.read() 
+__version__ = "0.0.1"
 
+REPO_NAME = "Text-Summarizer-Project"
+AUTHOR_USER_NAME = "sunilverma"
+SRC_REPO = "text_summarizer"
+AUTHOR_EMAIL = "sunilverma00027@gmail.com"
 
-    __version__ = "0.0.1"
+this_directory = Path(__file__).parent
+readme_path = this_directory / "README.md"
 
-    REPO_NAME = "Text-Summarizer-Project"
-    AUTHOR_USER_NAME = "sunilverma"
-    SRC_REPO = "text_summarizer" 
-    AUTHO_EMAIL = "sunilverma00027@gmail.com"
+long_description = ""
+if readme_path.exists():
+    long_description = readme_path.read_text(encoding="utf-8")
 
 setuptools.setup(
     name=SRC_REPO,
     version=__version__,
     author=AUTHOR_USER_NAME,
-    author_email=AUTHO_EMAIL,
+    author_email=AUTHOR_EMAIL,
     description="A small python package for text summarization",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -33,4 +37,6 @@ setuptools.setup(
     ],
     python_requires=">=3.7",
 )
+
+
     
