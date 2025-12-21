@@ -14,12 +14,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Workdir
 WORKDIR /app
 
-# Copy project files first (needed for -e . in requirements.txt)
-COPY . .
+# Copy setup.py and source code first
+COPY setup.py ./
+COPY src/ ./src/
 
-# Install dependencies
+# Copy requirements and install (excluding -e .)
+COPY requirements.txt ./
 RUN pip install --no-cache-dir --upgrade pip \
-	&& pip install --no-cache-dir -r requirements.txt
+	&& grep -v "^-e" requirements.txt > requirements-temp.txt \
+	&& pip install --no-cache-dir -r requirements-temp.txt \
+	&& rm requirements-temp.txt
+
+# Install package in editable mode
+RUN pip install --no-cache-dir -e .
+
+# Copy rest of the application
+COPY . .
 
 # Optional: create non-root user
 RUN useradd -ms /bin/bash appuser && chown -R appuser:appuser /app

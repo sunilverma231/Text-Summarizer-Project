@@ -21,6 +21,4 @@ artifacts/model_trainer/pegasus-samsum-model/
 artifacts/model_evaluation/
 __pycache__/
 *.ipynb
-*.md
-Dockerfile
-README.md
+
