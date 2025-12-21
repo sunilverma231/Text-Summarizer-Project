@@ -14,13 +14,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Workdir
 WORKDIR /app
 
-# Copy and install dependencies first (better cache)
-COPY requirements.txt ./
+# Copy project files first (needed for -e . in requirements.txt)
+COPY . .
+
+# Install dependencies
 RUN pip install --no-cache-dir --upgrade pip \
 	&& pip install --no-cache-dir -r requirements.txt
-
-# Copy project
-COPY . .
 
 # Optional: create non-root user
 RUN useradd -ms /bin/bash appuser && chown -R appuser:appuser /app
