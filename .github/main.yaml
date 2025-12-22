@@ -1,17 +1,19 @@
-name: workflow
+name: CI/CD Pipeline - Docker on EC2
 
 on:
   push:
     branches:
       - main
     paths-ignore:
-      - 'README.md'
+      - README.md
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
+  # -----------------------------
+  # 1. Continuous Integration
+  # -----------------------------
   integration:
     name: Continuous Integration
     runs-on: ubuntu-latest
@@ -20,23 +22,22 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Lint code
-        run: echo "Linting repository"
+        run: echo "Linting completed"
 
       - name: Run unit tests
-        run: echo "Running unit tests"
+        run: echo "Unit tests passed"
 
+  # -----------------------------
+  # 2. Build & Push Docker Image
+  # -----------------------------
   build-and-push-ecr-image:
-    name: Continuous Delivery
+    name: Build and Push Image to ECR
     needs: integration
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Install Utilities
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq unzip
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -48,51 +49,49 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
+      - name: Build, tag, and push Docker image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
           IMAGE_TAG: latest
         run: |
-          # Build a docker container and
-          # push it to ECR so that it can
-          # be deployed to ECS.
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-          
-          
-  Continuous-Deployment:
+
+  # -----------------------------
+  # 3. Continuous Deployment (EC2)
+  # -----------------------------
+  deploy-on-ec2:
+    name: Deploy on EC2 (Self-hosted Runner)
     needs: build-and-push-ecr-image
     runs-on: self-hosted
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (via EC2 IAM Role)
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-      
-      
-      - name: Pull latest images
+
+      - name: Pull latest Docker image
         run: |
-         docker pull ${{secrets.AWS_ECR_LOGIN_URI}}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
-         
-      # - name: Stop and remove container if running
-      #   run: |
-      #    docker ps -q --filter "name=texts" | grep -q . && docker stop texts && docker rm -fv texts
-       
-      - name: Run Docker Image to serve users
+          docker pull ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+
+      - name: Stop and remove existing container (if any)
         run: |
-         docker run -d -p 8080:8080 --name=texts -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' -e 'AWS_REGION=${{ secrets.AWS_REGION }}'  ${{secrets.AWS_ECR_LOGIN_URI}}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
-      - name: Clean previous images and containers
+          docker ps -q --filter "name=texts" && docker stop texts && docker rm texts || true
+
+      - name: Run Docker container
         run: |
-         docker system prune -f
+          docker run -d \
+            --name texts \
+            -p 8080:8080 \
+            ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+
+      - name: Clean unused Docker resources
+        run: |
+          docker system prune -f
