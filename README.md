@@ -116,6 +116,133 @@ Text-Summarizer-Project/
 
 ```
 
+
+# Project Title
+
+A brief description of what this project does and who it's for
+# 🚀 End-to-End Text Summarizer with LoRA Fine-Tuning
+
+[![CI/CD Pipeline - Deploy Docker on EC2](https://github.com/sunilverma231/Text-Summarizer-Project/actions/workflows/main.yaml/badge.svg)](https://github.com/sunilverma231/Text-Summarizer-Project/actions/workflows/main.yaml)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](http://51.20.86.12:8000)
+![AWS](https://img.shields.io/badge/AWS-EC2-orange)
+![Docker](https://img.shields.io/badge/Docker-Containerized-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-Production--ready-teal)
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+
+🔗 **Live Application**: http://51.20.86.12:8000  
+📘 **Swagger Docs**: http://51.20.86.12:8000/docs  
+
+---
+
+## 📌 Overview
+
+A **production-ready text summarization system** built using **FastAPI**, **Hugging Face Transformers**, and **Parameter-Efficient Fine-Tuning (LoRA / PEFT)**.
+
+This project demonstrates a **full MLOps lifecycle**:
+- Data ingestion → training → evaluation
+- Model serving via FastAPI
+- Dockerized deployment
+- CI/CD using GitHub Actions
+- **Automated deployment on AWS EC2 using a self-hosted runner**
+
+---
+
+## 🚀 Features
+
+- ✅ LoRA-based fine-tuning (PEFT)
+- ✅ FastAPI REST API (`/train`, `/predict`)
+- ✅ Modular ML pipeline architecture
+- ✅ Docker + Gunicorn + Uvicorn
+- ✅ CI/CD pipeline with GitHub Actions
+- ✅ AWS ECR + EC2 deployment
+- ✅ Self-hosted GitHub Actions runner
+- ✅ Graceful model fallback
+- ✅ Health checks & logging
+
+---
+
+## 🧠 Tech Stack
+
+### Machine Learning / NLP
+- 🤗 Transformers (PEGASUS)
+- PEFT (LoRA)
+- PyTorch
+- ROUGE evaluation
+- Hugging Face Datasets
+
+### Backend
+- FastAPI
+- Gunicorn + Uvicorn
+- Jinja2
+
+### DevOps & Cloud
+- Docker
+- AWS EC2
+- AWS ECR
+- GitHub Actions (CI/CD)
+- Self-hosted GitHub Runner
+
+---
+
+## 📂 Project Structure
+
+```text
+Text-Summarizer-Project/
+│
+├── app.py                          # FastAPI application with /predict and /train endpoints
+├── main.py                         # Pipeline orchestrator (runs all stages)
+├── Dockerfile                      # Production-ready Docker image
+├── requirements.txt                # Python dependencies
+├── setup.py                        # Package installation
+├── params.yaml                     # Training hyperparameters
+├── README.md                       # This file
+├── DEPLOY_ECS.md                   # AWS ECS deployment guide
+├── FAST_TRAINING.md                # Fast training mode documentation
+├── LORA_MIGRATION.md               # LoRA migration details
+│
+├── config/
+│   └── config.yaml                 # Project configuration (paths, model names)
+│
+├── src/text_summarizer/
+│   ├── __init__.py
+│   ├── constants/                  # Constants and paths
+│   ├── entity/                     # Data classes for configs
+│   ├── logging/                    # Custom logging setup
+│   ├── utils/
+│   │   └── common.py               # Helper functions (read YAML, create dirs)
+│   ├── config/
+│   │   └── configuration.py        # Configuration manager
+│   ├── components/
+│   │   ├── data_ingestion.py       # Download and extract dataset
+│   │   ├── data_validation.py      # Validate dataset schema
+│   │   ├── data_transformation.py  # Tokenize and prepare data
+│   │   ├── model_trainer.py        # LoRA fine-tuning with PEFT
+│   │   └── model_evaluation.py     # ROUGE score evaluation
+│   └── pipeline/
+│       ├── stage_01_data_ingestion.py
+│       ├── stage_02_data_validation.py
+│       ├── stage_03_data_transformation.py
+│       ├── stage_04_model_trainer.py
+│       ├── stage_05_model_evaluation.py
+│       └── prediction.py           # Prediction pipeline with LoRA support
+│
+├── research/                       # Jupyter notebooks for experimentation
+│   ├── 01_data_ingestion.ipynb
+│   ├── 02_data_validation.ipynb
+│   ├── 03_data_transformation.ipynb
+│   ├── 04_model_trainer.ipynb
+│   └── 05_model_evaluation.ipynb
+│
+├── artifacts/                      # Generated during pipeline execution
+│   ├── data_ingestion/             # Downloaded SAMSum dataset
+│   ├── data_validation/            # Validation status
+│   ├── data_transformation/        # Tokenized datasets
+│   ├── model_trainer/              # LoRA adapters and tokenizer
+│   └── model_evaluation/           # metrics.csv with ROUGE scores
+│
+└── tests/                          # Unit tests
+    └── unit/
+
 ## 🔄 Development Workflows
 
 Follow these steps when making changes to the pipeline:
@@ -346,3 +473,4 @@ See [LICENSE](LICENSE) file for details.
 ---
 
 **Built with ❤️ using Transformers, PEFT, FastAPI, and AWS** 
+
