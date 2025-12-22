@@ -14,6 +14,7 @@ env:
   ECS_SERVICE: text-summarizer-service
   ECS_CLUSTER: text-summarizer-cluster
   CONTAINER_NAME: text-summarizer
+  TASK_DEFINITION_NAME: text-summarizer-task
 
 jobs:
   build-and-deploy:
@@ -67,9 +68,13 @@ jobs:
 
     - name: 📝 Download task definition
       run: |
+        set -e
+        echo "Describing task definition: $TASK_DEFINITION_NAME in region $AWS_REGION"
         aws ecs describe-task-definition \
-          --task-definition text-summarizer-task \
+          --task-definition "$TASK_DEFINITION_NAME" \
+          --region "$AWS_REGION" \
           --query taskDefinition > task-definition.json
+        echo "✅ Task definition downloaded"
 
     - name: 🔄 Fill in the new image ID in the Amazon ECS task definition
       id: task-def
